@@ -14,7 +14,7 @@ Getting Started
 
 首先克隆这个仓库
 
-    git clone git://github.com/ideanmonad/openlua.git
+    git clone git://github.com/ideamonad/openlua.git
 
 build本项目需要gcc的支持，Windows下请安装Mingw <http://www.mingw.org/> 。
 进入openlua/src，运行make，在当前目录下即得到名为openlua(或者openlua.exe)的可执行文件。
