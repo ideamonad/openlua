@@ -1,0 +1,47 @@
+COPY= cp -f
+RM= rm -f
+RMDIR= rm -r -f
+MKDIR= mkdir
+
+BYTE_PATH= byte
+OBJS_PATH= objs
+
+CFLAGS= -I ./lua502/include
+LDFLAGS=
+
+LIBS= -lm
+LUA_LIBS= ./lua502/src/liblua.a ./lua502/src/liblualib.a
+
+LUAC= ./lua502/src/luac
+BIN2C= ./lua502/src/bin2c
+
+LUA_SRCS= common.lua set.lua list.lua stack.lua prototype.lua analyse.lua slr.lua parse.lua
+
+LUA_INCS= $(foreach e, $(LUA_SRCS), $(BYTE_PATH)/$(e:.lua=.inc))
+
+PROG=openlua
+
+.PHONY: main dirs clean
+
+main: dirs $(PROG)
+
+dirs: $(BYTE_PATH) $(OBJS_PATH)
+
+$(BYTE_PATH) $(OBJS_PATH) : 
+	-$(MKDIR) $@
+
+$(PROG): $(LUAC) $(BIN2C) openlua.c $(LUA_INCS)
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ openlua.c $(LUA_LIBS) $(LIBS)
+
+$(LUA_LIBS) $(LUAC) $(BIN2C):
+	cd lua502 && $(MAKE) $(MFLAGS)
+
+$(LUA_INCS): $(BYTE_PATH)/%.inc : %.lua
+	$(LUAC) -o $(basename $@).byte $<
+	$(BIN2C) $(basename $@).byte > $@
+
+clean :
+	cd lua502 && $(MAKE) $(MFLAGS) $@
+	-$(RMDIR) $(BYTE_PATH)
+	-$(RMDIR) $(OBJS_PATH)
+	-$(RM) $(PROG)

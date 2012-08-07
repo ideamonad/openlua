@@ -1,0 +1,147 @@
+program : chunk
+
+chunk : optional_compound_stat
+
+optional_compound_stat : compound_stat
+                       | empty
+
+compound_stat : compound_stat one_stat
+              | one_stat
+
+one_stat : metastat
+         | stat stat_sep
+
+metastat : syntaxdef stat_sep
+         | transformerdef stat_sep
+         | import_module stat_sep
+
+syntaxdef : syntax Name ':' Literal
+
+transformerdef : transformer Name block end
+
+import_module : import Literal
+
+stat_sep : ';'
+         | empty
+
+optional_stat_list : stat_list stat_sep
+                   | empty
+
+stat_list : stat_list stat_sep stat
+          | stat
+
+block : optional_stat_list
+
+stat : varlist '=' explist
+     | functioncall
+     | do block end
+     | while exp do block end
+     | repeat block until exp
+     | if exp then block optional_elseif_part optional_else_part end
+     | return result_part
+     | break
+     | for Name '=' exp ',' exp do block end
+     | for Name '=' exp ',' exp ',' exp do block end
+     | for namelist in explist do block end
+     | function funcname funcbody
+     | local function Name funcbody
+     | local localvar_list init_part
+
+optional_elseif_part : elseif_part
+                     | empty
+
+elseif_part : elseif_part elseif exp then block
+            | elseif exp then block
+
+optional_else_part : else block
+                   | empty
+
+result_part : explist
+            | empty
+
+localvar_list : localvar_list ',' Name
+              | Name
+
+init_part : init
+          | empty
+
+funcname : Name dotname_list colone_name
+
+dotname_list : dotname_list '.' Name
+             | empty
+
+colone_name : ':' Name
+            | empty
+
+varlist : varlist ',' var
+        | var
+
+var : Name 
+    | prefixexp '[' exp ']' 
+    | prefixexp '.' Name
+
+namelist : namelist ',' Name
+         | Name
+
+init : '=' explist
+
+explist : explist ',' exp
+        | exp
+
+exp : nil | false | true | Number | Literal
+    | functiondef 
+    | var
+    | functioncall
+    | '(' exp ')'
+    | tableconstructor 
+    | exp binop exp 
+    | unop exp
+
+prefixexp : var 
+          | functioncall 
+          | '(' exp ')'
+
+functioncall : prefixexp args 
+             | prefixexp ':' Name args
+
+args : '(' explist ')' 
+     | '(' ')'
+     | tableconstructor 
+     | Literal
+
+functiondef : function funcbody
+
+funcbody : '(' optional_parlist ')' block end
+
+optional_parlist : parlist
+                 | empty
+
+parlist : parname_list
+        | parname_list ',' '...' 
+        | '...'
+
+parname_list : parname_list ',' Name
+             | Name
+
+tableconstructor : '{' optional_fieldlist '}'
+
+optional_fieldlist : fieldlist
+                   | fieldlist fieldsep
+                   | empty
+
+fieldlist : fieldlist fieldsep field
+          | field
+
+field : '[' exp ']' '=' exp 
+      | keyname '=' exp 
+      | exp
+
+keyname : Name
+
+fieldsep : ',' | ';'
+
+binop : '+' | '-' | '*' | '/' | '^' | '..'
+      | '<' | '<=' | '>' | '>=' | '==' | '~='
+      | and | or
+
+unop : '-' | not

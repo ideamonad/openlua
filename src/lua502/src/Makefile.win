@@ -1,0 +1,141 @@
+# makefile for Lua core library
+
+CFLAGS = -Wall -D_WIN32 -I ../include -I ./
+ARFLAGS= rcu
+
+RM= del /F /Q
+
+CORE_OBJS=	\
+	lapi.o \
+	lcode.o \
+	ldebug.o \
+	ldo.o \
+	ldump.o \
+	lfunc.o \
+	lgc.o \
+	llex.o \
+	lmem.o \
+	lobject.o \
+	lopcodes.o \
+	lparser.o \
+	lstate.o \
+	lstring.o \
+	ltable.o \
+	ltests.o \
+	ltm.o \
+	lundump.o \
+	lvm.o \
+	lzio.o
+
+CORE_SRCS=	\
+	lapi.c \
+	lcode.c \
+	ldebug.c \
+	ldo.c \
+	ldump.c \
+	lfunc.c \
+	lgc.c \
+	llex.c \
+	lmem.c \
+	lobject.c \
+	lopcodes.c \
+	lparser.c \
+	lstate.c \
+	lstring.c \
+	ltable.c \
+	ltests.c \
+	ltm.c \
+	lundump.c \
+	lvm.c \
+	lzio.c \
+	lapi.h \
+	lcode.h \
+	ldebug.h \
+	ldo.h \
+	lfunc.h \
+	lgc.h \
+	llex.h \
+	llimits.h \
+	lmem.h \
+	lobject.h \
+	lopcodes.h \
+	lparser.h \
+	lstate.h \
+	lstring.h \
+	ltable.h \
+	ltm.h \
+	lundump.h \
+	lvm.h \
+	lzio.h
+
+CORE_LIB= liblua.a
+
+##
+EXTRA_DEFS= $(POPEN) $(TMPNAM) $(DEGREES) $(LOADLIB)
+AUX_OBJS= lauxlib.o lbaselib.o ldblib.o liolib.o lmathlib.o ltablib.o lstrlib.o loadlib.o \
+	lfs.o
+AUX_SRCS= lauxlib.c lbaselib.c ldblib.c liolib.c lmathlib.c ltablib.c lstrlib.c loadlib.c \
+	lfs.c
+AUX_LIB= liblualib.a
+
+##
+EXTRA_DEFS= $(USERCONF)
+LUA_OBJS= lua.o
+LUA_SRCS= lua.c
+LUA_PROG= lua.exe
+
+##
+INCS= -I$(INC) -I.. $(EXTRA_INCS)
+LUAC_OBJS= luac.o print.o
+LUAC_SRCS= luac.c print.c
+
+LUAC_PROG= luac.exe
+
+##
+BIN2C=bin2c.exe
+
+##
+main: $(LUA_PROG) $(LUAC_PROG) $(BIN2C)
+
+$(LUA_PROG): $(LUA_OBJS) $(CORE_LIB) $(AUX_LIB)
+	$(CC) -o $@ $(LUA_OBJS) -L ./ -llua -llualib -lm
+
+$(LUAC_PROG): $(LUAC_OBJS) $(CORE_LIB) $(AUX_LIB)  luac_lopcodes.o
+	$(CC) -o $@ $(LUAC_OBJS) luac_lopcodes.o -L ./ -llua -llualib -lm
+
+$(BIN2C): bin2c.c
+	$(CC) $(CFLAGS) -o $@ $<
+
+# print.c needs opcode names from lopcodes.c
+luac_lopcodes.o: lopcodes.c lopcodes.h
+	$(CC) -c $(CFLAGS) -DLUA_OPNAMES -o $@ lopcodes.c
+
+$(CORE_LIB): $(CORE_OBJS)
+	$(AR) $(ARFLAGS) $@ $(CORE_OBJS)
+
+$(AUX_LIB): $(AUX_OBJS)
+	$(AR) $(ARFLAGS) $@ $(AUX_OBJS)
+
+$(CORE_OBJS): %.o : %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(AUX_OBJS): %.o : %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(LUA_OBJS): %.o : %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+$(LUAC_OBJS): %.o : %.c
+	$(CC) -c $(CFLAGS) -o $@ $<
+
+clean:
+	-$(RM) $(LUA_PROG)
+	-$(RM) $(LUAC_PROG)
+	-$(RM) $(LUA_OBJS)
+	-$(RM) $(LUAC_OBJS)
+	-$(RM) luac_lopcodes.o
+	-$(RM) $(BIN2C)
+	-$(RM) $(CORE_OBJS)
+	-$(RM) $(CORE_LIB)
+	-$(RM) $(AUX_OBJS)
+	-$(RM) $(AUX_LIB)

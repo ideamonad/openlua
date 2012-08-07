@@ -1,0 +1,155 @@
+chunk : stat statsep chunk
+      | empty
+
+statsep : ';'
+        | empty
+
+block : chunk
+
+stat : varlist '=' explist
+     | functioncall
+     | do block end
+     | while exp do block end
+     | repeat block until exp
+     | if exp then block elseif_part else_part end
+     | return result_part
+     | break
+     | for Name for_part
+     | function funcname funcbody
+     | local local_part
+
+elseif_part : elseif exp then block elseif_part
+            | empty
+
+else_part : else block
+          | empty
+
+result_part : explist
+            | empty
+
+for_part : '=' exp ',' exp step_part do block end
+         | namelist_tail in explist do block end
+
+step_part : ',' exp
+          | empty
+
+local_part : function Name funcbody
+           | namelist init_part
+
+init_part : '=' explist
+          | empty
+
+funcname : Name dotname_part colonname
+
+dotname_part : '.' Name dotname_part 
+             | empty
+
+colonname : ':' name
+          | empty
+
+varlist : var varlist_tail
+
+varlist_tail : ',' var varlist_tail
+             | empty 
+
+var : Name optional_index_list compose_index_list
+    | '(' exp ')' exp_index
+
+exp_index : index_list compose_index_list
+          | call_list index_list compose_index_list
+
+optional_index_list : index_list
+                    | empty
+
+index_list : index_part index_list_tail
+
+index_list_tail : index_part index_list_tail
+                | empty
+
+index_part : '[' exp ']'
+           | '.' Name
+
+compose_index_list : call_list index_list compose_index_list_tail
+
+compose_index_list_tail : call_list index_list compose_index_list_tail
+                        | empty
+
+namelist : Name namelist_tail
+
+namelist_tail : ',' Name namelist_tail
+              | empty 
+
+explist : exp explist_tail
+
+explist_tail : ',' exp explist_tail
+             | empty
+
+exp : basic_exp binop_exp_list
+    | '(' exp ')' binop_exp_list
+    | unop exp binop_exp_list
+
+binop_exp_list : binop exp binop_exp_list
+               | empty
+
+basic_exp : nil | false | true | Number | Literal
+          | func 
+          | var
+          | functioncall
+          | tableconstructor 
+
+functioncall : Name optional_index_list compose_index_list call_list
+             | '(' exp ')' exp_call
+
+exp_call : call_list exp_call_tail
+         | index_list compose_index_list call_list
+
+exp_call_tail : index_list compose_index_list call_list
+              | empty
+
+call_list : call_part call_list_tail
+
+call_list_tail : call_part call_list_tail
+               | empty 
+
+call_part : args
+          | ':' Name args
+
+args : '(' arglist ')' 
+     | tableconstructor 
+     | Literal
+
+arglist : explist
+        | empty
+
+func : function funcbody
+
+funcbody : '(' parlist ')' block end
+
+parlist : namelist ',' variable_par
+        | variable_par
+        | empty
+
+variable_par : '...'
+
+tableconstructor : '{' optional_fieldlist '}'
+
+optional_fieldlist : fieldlist
+                   | empty
+
+fieldlist : field fieldlist_tail
+
+fieldlist_tail : fieldsep field fieldlist_tail
+               | empty
+
+field : '[' exp ']' '=' exp 
+      | name '=' exp 
+      | exp
+
+fieldsep : ',' 
+         | ';'
+
+binop : '+' | '-' | '*' | '/' | '^' | '..'
+      | '<' | '<=' | '>' | '>=' | '==' | '~='
+      | and | or
+
+unop : '-' | not
