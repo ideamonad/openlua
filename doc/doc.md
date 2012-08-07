@@ -32,7 +32,7 @@ OpenLua这个名字代表两个意思：一是指为支持静态元编程而对�
 
 OpenLua提供给用户的静态元编程语言就是标准Lua本身，因此程序员无需学习另外一门语言即可轻松地利用开放式编译器的扩展能力。而有的系统提供的静态元编程语言与普通源代码使用的语言间的编程模型相差太大，最突出的例子便是C++的template。作为元编程语言的template本质上提供的是一种函数式编程范式(functional programming paradigm)：没有变量、不允许赋值(也就没有side-effects)、用递归来实现各种控制结构，这对许多C++程序员来说都是非常陌生的。 
 
-该系统主要用标准Lua语言并辅以少量的C来实现，所有功能(包括词法分析，语法分析)均为从头独立构建，并未采用任何外部辅助工具(比如YACC等)。做出这样的设计决定有这么几个原因：1、Lua官方网站http://www.lua.org已经为我们提供了一个高效率的标准实现，这使得用Lua来编写Lua语言编译器(一个有趣的元环: meta-circle)成为可能；2、标准Lua本身非常简洁、易于使用并且功能足够强大，尤其是提供了比较完善的文本处理函数,这一切都有助于开发效率的提高；3、Lua是作为一门嵌入式语言(embeded language)来设计的，并且以C程序库的形式提供完整系统，这使得我们很容易将标准Lua语言的解释器集成到OpenLua编译器中，从而为静态元程序提供一个完善的运行时环境；4、OpenLua是一个开放式架构的编译器，它的很多编译行为(包括词法分析、语法分析)与非开放式系统有很大不同，而YACC等自动生成工具只能生成普通的封闭式系统，因此类似工具并不适合在本项目中使用。 
+该系统主要用标准Lua语言并辅以少量的C来实现，所有功能(包括词法分析，语法分析)均为从头独立构建，并未采用任何外部辅助工具(比如YACC等)。做出这样的设计决定有这么几个原因：1、Lua官方网站<http://www.lua.org>已经为我们提供了一个高效率的标准实现，这使得用Lua来编写Lua语言编译器(一个有趣的元环: meta-circle)成为可能；2、标准Lua本身非常简洁、易于使用并且功能足够强大，尤其是提供了比较完善的文本处理函数,这一切都有助于开发效率的提高；3、Lua是作为一门嵌入式语言(embeded language)来设计的，并且以C程序库的形式提供完整系统，这使得我们很容易将标准Lua语言的解释器集成到OpenLua编译器中，从而为静态元程序提供一个完善的运行时环境；4、OpenLua是一个开放式架构的编译器，它的很多编译行为(包括词法分析、语法分析)与非开放式系统有很大不同，而YACC等自动生成工具只能生成普通的封闭式系统，因此类似工具并不适合在本项目中使用。 
 
 因为Lua虚拟机及其指令集并非语言定义的一部分，它们有可能在未通知语言使用者的情况下变更，而且底层的虚拟机平台与OpenLua提供的静态元编程能力、开放式架构并无关联，所以OpenLua编译器没有做生成字节码(bytecode)的工作。 
 
@@ -84,7 +84,7 @@ fieldsep : ',' |
 
 如果左部是新的非终结符，那么产生式一定要另启新的一行写。empty和eof是两个特殊的终结符，代表空符号和输入结尾符，用户不应该用它们做任何非终结符的名字。 
 
-    OpenLua在标准Lua的基础上引入了3个新的语法成分: 用户自定义语法(user-defined syntax)、源代码转换子(source code transformer)以及编译期模块导入(import module)语句。
+OpenLua在标准Lua的基础上引入了3个新的语法成分: 用户自定义语法(user-defined syntax)、源代码转换子(source code transformer)以及编译期模块导入(import module)语句。
 
 
 ###2、 用户自定义语法 
@@ -95,21 +95,14 @@ syntaxdef : syntax Name ':' Literal
 
 syntax关键字后是自定义语法的名字，然后一个冒号，最后是包含了完整描述自定义语法产生式的字符串。程序1是个例子: 
 
-syntax contractfuncSyntax : 
-
-[[ 
-
-cf : Name '(' optional_parlist ')' pre block post end 
-
-pre : require exp 
-
-| empty 
-
-post : ensure exp 
-
-| empty 
-
-]]
+    syntax contractfuncSyntax : 
+    [[ 
+      cf : Name '(' optional_parlist ')' pre block post end 
+      pre : require exp 
+          | empty 
+      post : ensure exp 
+           | empty 
+    ]]
 
 程序1
 
@@ -126,25 +119,19 @@ transformerdef : transformer Name block end
 
 假设有这么一段程序: 
 
-transformer test 
-
-   return "print('test')" 
-
-end 
-
-a = 2006 
-
-test 
+    transformer test 
+      return "print('test')" 
+    end 
+    a = 2006 
+    test 
 
 程序2
 
 
 那么它被编译后得到的输出便是： 
 
-a = 2006 
-
-print('test') 
-
+    a = 2006 
+    print('test') 
 
 程序3
 
@@ -165,53 +152,36 @@ import关键字后是你要导入的模块文件名。当编译器遇到import�
 
 OpenLua通过transformer提供了静态元编程能力，但是如果编译器没有开放出一些必需的内部接口，并为元程序运行提供一个完善的运行环境，那么元程序能够做的事情将会很有限。因此作为开放式架构编译器的OpenLua提供了一系列的关键接口。 让我们先来看一个例子： 
 
-syntax metablockSyntax : 
+    syntax metablockSyntax : 
+    [[ 
+      metablock : block endmeta 
+    ]] 
 
-[[ 
+    transformer meta 
+      -- lock用于禁止这段代码重入 
+      if not lock() then 
+        return nil,"meta transformers can't internest" 
+      end 
 
-metablock : block endmeta 
+      -- parse是编译器开放的接口
+      local tree,error = parse(metablockSyntax) 
 
-]] 
+      if nil == tree then 
+        return nil,error 
+      end 
 
-transformer meta 
+      local f = loadstring(tree:get_child(1):emit()) 
 
-   -- lock用于禁止这段代码重入 
+      -- _METAENV是用于保存编译期运行变量的全局环境 
+      setfenv(f,_METAENV) 
 
-   if not lock() then 
-
-      return nil,"meta transformers can't internest" 
-
-   end 
-
-   -- parse是编译器开放的接口
-
-   local tree,error = parse(metablockSyntax) 
-
-   if nil == tree then 
-
-      return nil,error 
-
-   end 
-
-   local f = loadstring(tree:get_child(1):emit()) 
-
-   -- _METAENV是用于保存编译期运行变量的全局环境 
-
-   setfenv(f,_METAENV) 
-
-   local succeed,msg = pcall(f) 
-
-   if not succeed then 
-
-      return nil,"metaprogram run error : "..msg 
-
-   end 
-
-   unlock() 
-
-   return "" 
-
-end 
+      local succeed,msg = pcall(f) 
+      if not succeed then 
+        return nil,"metaprogram run error : "..msg 
+      end 
+      unlock() 
+      return "" 
+    end 
 
 
 程序4
@@ -233,16 +203,12 @@ lock和unlock是编译器提供的另外两个接口。其中lock函数的功能
 
 这个meta转换子起什么作用呢？其实它就是让用户无需定义transformer便能方便地运行元程序。假设程序4保存在一个名为std.ol(ol是推荐使用的OpenLua源代码文件后缀名)的文件中，并且另有一个名为temp.ol的文件： 
 
--- temp.ol 
+     -- temp.ol 
+     import "std.ol" -- 象这样没指定路径的话，就要求std.ol在当前目录下 
 
-import "std.ol" -- 象这样没指定路径的话，就要求std.ol在当前目录下 
-
-meta 
-
-   print("Hello world from metaprogram !") 
-
-endmeta 
-
+     meta 
+       print("Hello world from metaprogram !") 
+     endmeta 
 
 程序5
 
