@@ -34,7 +34,7 @@ OpenLua提供给用户的静态元编程语言就是标准Lua本身，因此程�
 
 具体一点来说，OpenLua的编译过程就是：首先解析源文件中的OpenLua源代码，并同时执行相应的静态元程序(如果有的话)以对源代码进行各种转换与处理，如果不出错(意味着语法正确、静态元程序运行无误)那么解析完毕后即生成一颗标准Lua语言的语法解析树(syntax parse tree)，最后如果需要(见下文关于OpenLua使用格式的介绍)便将这颗语法解析树反解析(unparse)回标准Lua程序文本。图1形象地刻画了整个过程。反解析得到的标准Lua程序代码一定是能被标准Lua编译器编译通过的语法正确的代码，因为语法树的生成过程即保证了这一点。
 
-![workflow](https://github.com/ideamonad/openlua/raw/master/doc/images/workflow-desc.png)
+![workflow](https://github.com/netease/openlua/raw/master/doc/images/workflow-desc.png)
 
 四、 OpenLua的使用格式 
 ---------
@@ -47,7 +47,7 @@ sourcefile是待编译的openlua源文件名，outputfile是可选的输出文�
 五、OpenLua能做什么？
 ---------
 
-利用OpenLua我们可以为Lua实现循环编译、面向方面编程(AOP)以及契约式开发(Design by Contract)等一系列有趣的应用，具体请看<https://github.com/ideamonad/openlua/raw/master/doc/openlua-design.pdf> 的第四章。
+利用OpenLua我们可以为Lua实现循环编译、面向方面编程(AOP)以及契约式开发(Design by Contract)等一系列有趣的应用，具体请看<https://github.com/netease/openlua/raw/master/doc/openlua-design.pdf> 的第四章。
 
 六、 OpenLua对标准Lua语言的扩展 
 ---------
